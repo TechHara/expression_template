@@ -1,59 +1,89 @@
+#include <cassert>
+#include <chrono>
+#include <cmath>
+#include <fstream>
 #include <iostream>
 #include <vector>
-#include <fstream>
-#include <chrono>
-#include <cassert>
 
-template<typename T>
-struct Vector {
-    std::vector<T> data;
+constexpr auto NCOLS = 10;
 
-    std::size_t size() const { return data.size(); }
+template <typename T> struct Vector {
+  std::vector<T> data;
 
-    const T &operator[](std::size_t idx) const { return data[idx]; }
+  std::size_t size() const { return data.size(); }
 
-    auto to_string() const {
-        std::string s;
-        for (const auto &x: data) {
-            s += std::to_string(x) + ", ";
-        }
-        return s;
+  const T &operator[](std::size_t idx) const { return data[idx]; }
+
+  auto to_string() const {
+    std::string s;
+    for (const auto &x : data) {
+      s += std::to_string(x) + ", ";
     }
+    return s;
+  }
 };
 
-template<typename T>
-auto operator+(Vector<T> const &x, Vector<T> const &y) {
-    assert(x.size() == y.size());
-    std::vector<decltype(x[0] + y[0])> result;
-    result.reserve(x.size());
-    for (std::size_t idx = 0; idx < x.size(); ++idx) {
-        result.push_back(x[idx] + y[idx]);
-    }
-    return Vector<T>{result};
+template <typename T> auto operator+(Vector<T> const &x, Vector<T> const &y) {
+  assert(x.size() == y.size());
+  std::vector<decltype(x[0] + y[0])> result;
+  result.reserve(x.size());
+  for (std::size_t idx = 0; idx < x.size(); ++idx) {
+    result.push_back(x[idx] + y[idx]);
+  }
+  return Vector<T>{result};
+}
+
+auto read_vectors_from(const char *filename) {
+  std::ifstream ifs(filename, std::ifstream::ate | std::ifstream::binary);
+  auto filesize = ifs.tellg();
+  auto nrows = filesize / sizeof(double) / NCOLS;
+  ifs.seekg(std::ifstream::beg);
+
+  std::vector<Vector<double>> columns(NCOLS);
+  for (auto &col : columns) {
+    col.data.resize(nrows);
+    ifs.read((char *)col.data.data(), nrows * sizeof(double));
+  }
+  return columns;
+}
+
+auto read_target_from(const char *filename) {
+  std::ifstream ifs(filename, std::ifstream::ate | std::ifstream::binary);
+  auto size = ifs.tellg() / sizeof(double);
+  ifs.seekg(std::ifstream::beg);
+
+  std::vector<double> target;
+  target.resize(size);
+  ifs.read((char *)target.data(), size * sizeof(double));
+  return target;
+}
+
+template <typename T>
+auto calculate_mse(std::vector<T> const &xs, std::vector<T> const &ys) {
+  assert(xs.size() == ys.size());
+  double sum = 0;
+  for (std::size_t idx = 0; idx < xs.size(); ++idx) {
+    sum += std::pow(xs[idx] - ys[idx], 2);
+  }
+  return sum / xs.size();
 }
 
 int main(int argc, char **argv) {
-    std::string input_file = argc >= 2 ? argv[1] : "/dev/stdin";
-    std::ifstream ifs{input_file};
-    // read 5-columns of type doubles separated by whitespace
-    std::vector<Vector<double>> columns(10);
-    std::string line;
-    double x;
-    std::size_t counter = 0;
-    while (ifs >> x) {
-        columns[counter % 10].data.push_back(x);
-        ++counter;
-    }
+  auto columns = read_vectors_from(argv[1]);
+  auto start = std::chrono::steady_clock::now();
+  Vector<double> w = columns[0] + columns[1] + columns[2] + columns[3] +
+                     columns[4] + columns[5] + columns[6] + columns[7] +
+                     columns[8] + columns[9];
+  auto end = std::chrono::steady_clock::now();
 
-    auto start = std::chrono::steady_clock::now();
-    Vector<double> w =
-            columns[0] + columns[1] + columns[2] + columns[3] + columns[4] + columns[5] + columns[6] + columns[7] +
-            columns[8] + columns[9];
-    auto end = std::chrono::steady_clock::now();
-    std::cout << w.to_string() << "\n";
+  auto target = read_target_from(argv[2]);
+  auto mse = calculate_mse(w.data, target);
 
-    std::cerr << "Elapsed time in milliseconds: "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << " ms\n";
-    return 0;
+  std::cerr << "Elapsed time in milliseconds: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end -
+                                                                     start)
+                   .count()
+            << " ms\n";
+  std::cerr << "MSE: " << mse << "\n";
+  return 0;
 }
