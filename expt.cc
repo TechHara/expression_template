@@ -8,16 +8,14 @@
 constexpr auto NCOLS = 10;
 
 template <typename E1, typename E2> struct VectorSum {
-  E1 const *x;
-  E2 const *y;
+  E1 const &x;
+  E2 const &y;
 
-  VectorSum(E1 const &x, E2 const &y) : x(&x), y(&y) {}
+  VectorSum(E1 const &x, E2 const &y) : x(x), y(y) {}
 
-  auto size() const { return x->size(); }
+  auto size() const { return x.size(); }
 
-  auto operator[](std::size_t idx) const {
-    return x->operator[](idx) + y->operator[](idx);
-  }
+  auto operator[](std::size_t idx) const { return x[idx] + y[idx]; }
 };
 
 template <typename T> struct Vector {
