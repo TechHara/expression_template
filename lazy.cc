@@ -16,7 +16,6 @@ template <typename T> struct VectorInterface {
 };
 
 template <typename T> struct VectorSum : VectorInterface<T> {
-  using value_type = T;
   VectorInterface<T> const &x;
   VectorInterface<T> const &y;
 
@@ -31,8 +30,6 @@ template <typename T> struct VectorSum : VectorInterface<T> {
 };
 
 template <typename T> struct Vector : VectorInterface<T> {
-  using value_type = T;
-
   std::vector<T> data;
 
   Vector() = default;
