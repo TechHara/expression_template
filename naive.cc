@@ -13,14 +13,6 @@ template <typename T> struct Vector {
   std::size_t size() const { return data.size(); }
 
   const T &operator[](std::size_t idx) const { return data[idx]; }
-
-  auto to_string() const {
-    std::string s;
-    for (const auto &x : data) {
-      s += std::to_string(x) + ", ";
-    }
-    return s;
-  }
 };
 
 template <typename T> auto operator+(Vector<T> const &x, Vector<T> const &y) {
