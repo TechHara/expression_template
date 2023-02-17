@@ -17,12 +17,12 @@ template <typename T> struct Vector {
 
 template <typename T> auto operator+(Vector<T> const &x, Vector<T> const &y) {
   assert(x.size() == y.size());
-  std::vector<decltype(x[0] + y[0])> result;
+  std::vector<T> result;
   result.reserve(x.size());
   for (std::size_t idx = 0; idx < x.size(); ++idx) {
     result.push_back(x[idx] + y[idx]);
   }
-  return Vector<T>{result};
+  return Vector<T>{std::move(result)};
 }
 
 auto read_vectors_from(const char *filename) {
