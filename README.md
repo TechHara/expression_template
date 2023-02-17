@@ -3,10 +3,12 @@ Simple demo of expression template technique in c++
 
 ## Requirement
 - python with numpy
+- cmake
 - clang or gcc
 
 ## How to run
 ```bash
+cmake -DCMAKE_CXX_FLAGS=-O3 -Bbuild && make -Cbuild -j
 bash run_benchmark.sh
 ```
 
