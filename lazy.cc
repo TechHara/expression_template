@@ -7,7 +7,7 @@
 
 constexpr auto NCOLS = 10;
 
-template <typename T> struct VectorBase {
+template <typename T> struct VectorInterface {
   using value_type = T;
 
   virtual std::size_t size() const = 0;
@@ -15,53 +15,43 @@ template <typename T> struct VectorBase {
   virtual T operator[](std::size_t idx) const = 0;
 };
 
-template <typename E1, typename E2> struct VectorSum {
-  using value_type = typename E1::value_type;
-  E1 const &x;
-  E2 const &y;
+template <typename T> struct VectorSum : VectorInterface<T> {
+  using value_type = T;
+  VectorInterface<T> const &x;
+  VectorInterface<T> const &y;
 
-  VectorSum(E1 const &x, E2 const &y) : x{x}, y{y} {
+  VectorSum(VectorInterface<T> const &x, VectorInterface<T> const &y)
+      : x{x}, y{y} {
     assert(x.size() == y.size());
   }
 
   virtual std::size_t size() const { return x.size(); }
 
-  virtual value_type operator[](std::size_t idx) const {
-    return x[idx] + y[idx];
-  }
+  virtual T operator[](std::size_t idx) const { return x[idx] + y[idx]; }
 };
 
-template <typename T> struct Vector : VectorBase<T> {
+template <typename T> struct Vector : VectorInterface<T> {
   using value_type = T;
 
   std::vector<T> data;
 
   Vector() = default;
 
-  Vector(std::initializer_list<T> list) : data{list} {}
-
-  template <typename E> Vector(E const &e) {
-    data.reserve(e.size());
-    for (std::size_t idx = 0; idx < e.size(); ++idx)
-      data.push_back(e[idx]);
+  Vector(VectorInterface<T> const &v) {
+    data.reserve(v.size());
+    for (std::size_t idx = 0; idx < v.size(); ++idx)
+      data.push_back(v[idx]);
   }
 
   virtual std::size_t size() const { return data.size(); }
 
   virtual T operator[](std::size_t idx) const { return data[idx]; }
-
-  auto to_string() const {
-    std::string s;
-    for (const auto &x : data) {
-      s += std::to_string(x) + ", ";
-    }
-    return s;
-  }
 };
 
-template <typename E1, typename E2> auto operator+(E1 const &x, E2 const &y) {
+template <typename T>
+auto operator+(VectorInterface<T> const &x, VectorInterface<T> const &y) {
   assert(x.size() == y.size());
-  return VectorSum{x, y};
+  return VectorSum<T>{x, y};
 }
 
 auto read_vectors_from(const char *filename) {

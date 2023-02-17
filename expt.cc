@@ -25,8 +25,6 @@ template <typename T> struct Vector {
 
   Vector() = default;
 
-  explicit Vector(std::vector<T> xs) : data{std::move(xs)} {}
-
   template <typename E> Vector(E &&expr) {
     data.reserve(expr.size());
     for (std::size_t idx = 0; idx < expr.size(); ++idx) {
@@ -37,14 +35,6 @@ template <typename T> struct Vector {
   auto operator[](std::size_t idx) const { return data[idx]; }
 
   auto size() const { return data.size(); }
-
-  auto to_string() const {
-    std::string s;
-    for (const auto &x : data) {
-      s += std::to_string(x) + ", ";
-    }
-    return s;
-  }
 };
 
 template <typename E1, typename E2> auto operator+(E1 const &xs, E2 const &ys) {
