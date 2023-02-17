@@ -4,17 +4,8 @@
 #include <fstream>
 #include <cassert>
 
-template<typename Impl>
-struct Expression {
-    auto GetImpl() const { return static_cast<Impl const &>(this); }
-
-    auto operator[](std::size_t idx) const { return GetImpl()->operator[](idx); }
-
-    auto size() const { return GetImpl()->size(); }
-};
-
 template<typename E1, typename E2>
-struct VectorSum : Expression<VectorSum<E1, E2>> {
+struct VectorSum {
     E1 const *x;
     E2 const *y;
 
@@ -26,7 +17,7 @@ struct VectorSum : Expression<VectorSum<E1, E2>> {
 };
 
 template<typename T>
-struct Vector : Expression<T> {
+struct Vector {
     std::vector<T> data;
 
     Vector() = default;
