@@ -11,7 +11,9 @@ template <typename E1, typename E2> struct VectorSum {
   E1 const &x;
   E2 const &y;
 
-  VectorSum(E1 const &x, E2 const &y) : x(x), y(y) {}
+  VectorSum(E1 const &x, E2 const &y) : x(x), y(y) {
+    assert(x.size() == y.size());
+  }
 
   auto size() const { return x.size(); }
 
